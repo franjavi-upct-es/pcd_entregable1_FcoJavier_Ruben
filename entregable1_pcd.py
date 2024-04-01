@@ -153,9 +153,6 @@ class ProfesorAsociado(Profesor):
         super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
         self.asignaturas_a_impartir = {}
 
-
-
-
 class ProfesorTitular(Profesor):
     def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin, area_investigacion, rol_investigacion):
         super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
