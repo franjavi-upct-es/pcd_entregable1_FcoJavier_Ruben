@@ -53,21 +53,20 @@ class Estudiante(Persona):
             raise ValueError('No se pueden cursar más de 12 asignaturas al mismo tiempo.')
         self.asignaturas_cursando.append(asignatura)
 
+    def visualizar_boletin_de_calificaciones(self):
+        for calificacion in self.asignaturas_completadas:
+            print(calificacion)
+
     @classmethod
     def añadir_estudiante(cls, estudiante):
         cls.estudiantes[estudiante.dni] = estudiante
 
     @classmethod
-    def eliminar_estudiante(self, dni):
-        if dni in cls.estudiantes:
-            del cls.estudiantes[dni]
+    def eliminar_estudiante(cls, estudiante):
+        if estudiante.dni in cls.estudiantes:
+            del cls.estudiantes[estudiante.dni]
         else:
             print("El DNI no coincide.")
-
-
-    def visualizar_boletin_de_calificaciones(self):
-        for calificacion in self.asignaturas_completadas:
-            print(calificacion)
 
 class TipoDepartamento(Enum):
     DIIC = 1
@@ -83,13 +82,16 @@ class Departamento:
         self.nombre = nombre
         self.director = director
         self.area_estudio = area_estudio
-        self.miembros_dep = set()  # Ahora miembros_dep es un conjunto
+        self.miembros_dep = {}
 
-    def añadir_miembro(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        self.miembros_dep.add(miembro.dni)  # Usamos add en lugar de append para añadir a un conjunto
+    def añadir_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
+        self.miembros_dep[miembro.dni] = miembro  # Usamos add en lugar de append para añadir a un conjunto
 
-    def eliminar_miembro(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        self.miembros_dep.remove(miembro.dni)  # remove funciona igual en conjuntos y listas
+    def eliminar_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
+        if miembro.dni in self.miembros_dep:
+            del self.miembros_dep[miembro.dni]
+        else:  
+            return "DNI no coincide"
 
     def buscar_miembro_dep(self, dni):
         if self.dni in self.miembros_dep:
@@ -98,6 +100,9 @@ class Departamento:
             return "DNI no coincide"
 
 class MiembroDepartamento(Persona):
+
+    miembros = {}
+
     def __init__(self, nombre, dni, direccion, sexo, departamento):
         super().__init__(nombre, dni, direccion, sexo)
         if not isinstance(departamento, TipoDepartamento):
@@ -107,9 +112,21 @@ class MiembroDepartamento(Persona):
     def cambiar_departamento(self, nuevo_departamento):
         if not isinstance(nuevo_departamento, TipoDepartamento):
             raise ValueError('El nuevo departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
-        self.departamento.eliminar_miembro(self) # Pasamos el objeto completo para poder acceder a su DNI
+        self.departamento.eliminar_miembro_dep(self) # Pasamos el objeto completo para poder acceder a su DNI
         self.departamento = nuevo_departamento
-        self.departamento.añadir_miembro(self.dni)
+        self.departamento.añadir_miembro_dep(self)
+
+    @classmethod
+    def añadir_miembros(cls, miembro):
+        cls.miembros[miembro.dni] = miembro
+
+    @classmethod
+    def eliminar_miembros(cls, miembro):
+        if miembro.dni in cls.miembros:
+            del cls.miembros[miembro.dni]
+        else:
+            print("El DNI no coincide.")
+    
 
 ##############################################################################
 class Profesor(MiembroDepartamento):
