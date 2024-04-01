@@ -41,7 +41,7 @@ class Estudiante(Persona):
         self.creditos_completados += creditos
         self.asignaturas_cursando.remove(asignatura)
 
-    def añadir_asignatura_actual(self, asignatura):
+    def añadir_asignatura_a_cursar(self, asignatura):
         if len(self.asignaturas_cursando) > 12:
             raise ValueError('No se pueden cursar más de 12 asignaturas al mismo tiempo')
         self.asignaturas_cursando.append(asignatura)
@@ -51,52 +51,81 @@ class TipoDepartamento(Enum):
     DITEC = 2
     DIS = 3
 
+#############################################################################
+        
 class Departamento:
     def __init__(self, nombre, director, area_estudio):
+        if not isinstance(nombre, TipoDepartamento):
+            raise ValueError('El nombre de departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
         self.nombre = nombre
         self.director = director
         self.area_estudio = area_estudio
-        self.miembros = []
+        self.miembros_dep = set()  # Ahora miembros_dep es un conjunto
 
-    def añadir_miembro(self, miembro):
-        self.miembros.append(miembro)
+    def añadir_miembro(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
+        self.miembros_dep.add(miembro.nombre)  # Usamos add en lugar de append para añadir a un conjunto
 
-    def eliminar_miembro(self, miembro):
-        self.miembros.remove(miembro)
+    def eliminar_miembro(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
+        self.miembros_dep.remove(miembro.nombre)  # remove funciona igual en conjuntos y listas
 
 
 class MiembroDepartamento(Persona):
     def __init__(self, nombre, dni, direccion, sexo, departamento):
         super().__init__(nombre, dni, direccion, sexo)
+        if not isinstance(departamento, TipoDepartamento):
+            raise ValueError('El departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
         self.departamento = departamento
 
     def cambiar_departamento(self, nuevo_departamento):
-        self.departamento.eliminar_miembro(self)
+        if not isinstance(nuevo_departamento, TipoDepartamento):
+            raise ValueError('El nuevo departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
+        self.departamento.eliminar_miembro(self.nombre)
         self.departamento = nuevo_departamento
-        self.departamento.añadir_miembro(self)
+        self.departamento.añadir_miembro(self.nombre)
 
-class ProfesorAsociado(MiembroDepartamento):
-    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado):
+##############################################################################
+class Profesor(MiembroDepartamento):
+    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin):
         super().__init__(nombre, dni, direccion, sexo, departamento)
-        self.asignaturas_a_impartir = []
         self.__cv = cv
         self.doctorado = doctorado
+        self.perfil_linkedin = perfil_linkedin
+        self.asignaturas_a_impartir = {}  # Ahora es un diccionario
 
-    def añadir_asignatura_actual(self, asignatura):
-        self.asignaturas_cursando.append(asignatura)
+    def añadir_asignatura_a_impartir(self, grado, asignatura):
+        if grado not in self.asignaturas_a_impartir:
+            self.asignaturas_a_impartir[grado] = []  # Si el grado no está en el diccionario, añade una lista vacía
+        self.asignaturas_a_impartir[grado].append(asignatura)  # Añade la asignatura a la lista de ese grado
 
-class ProfesorTitular(MiembroDepartamento):
-    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado):
-        super().__init__(nombre, dni, direccion, sexo, departamento)
-        self.asignaturas_a_impartir = []
-        self.__cv = cv
-        self.doctorado = doctorado
+    def eliminar_asignatura_a_impartir(self, grado, asignatura):
+        if grado in self.asignaturas_a_impartir and asignatura in self.asignaturas_a_impartir[grado]:
+            self.asignaturas_a_impartir[grado].remove(asignatura)  # Elimina la asignatura de la lista de ese grado
+            if not self.asignaturas_a_impartir[grado]:  # Si la lista de ese grado está vacía, elimina el grado del diccionario
+                del self.asignaturas_a_impartir[grado]
 
-class Investigador(ProfesorTitular):
-    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, area_investigacion, dedicacion_completa):
-        if not isinstance(dedicacion_completa, bool):
-            raise EmptyException('Debe ser True o False')
-        super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado)
+class ProfesorAsociado(Profesor):
+    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin):
+        super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
+        self.asignaturas_a_impartir = {}
+
+
+
+
+class ProfesorTitular(Profesor):
+    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin, area_investigacion, rol_investigacion):
+        super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
+        self.asignaturas_a_impartir = {}
         self.area_investigacion = area_investigacion
-        if self.dedicacion_completa is False:
-            self.asignaturas = []
+        self.rol_investigacion = rol_investigacion
+
+
+#########################################################################
+
+class Investigador(MiembroDepartamento):
+    def __init__(self, nombre, dni, direccion, sexo, departamento, cv, area_investigacion, rol_investigacion, financiacion, papers_publicados):
+        super().__init__(nombre, dni, direccion, sexo, departamento)
+        self.__cv = cv
+        self.area_investigacion = area_investigacion
+        self.rol_investigacion = rol_investigacion
+        self.__financiacion = financiacion
+        self.papers_publicados = papers_publicados
