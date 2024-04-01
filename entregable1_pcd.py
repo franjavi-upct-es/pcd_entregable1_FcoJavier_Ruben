@@ -38,17 +38,19 @@ class Estudiante(Persona):
         self.grado = grado
         self.curso = curso
         self.creditos_completados = 0
-        self.asignaturas_completadas = []
-        self.asignaturas_cursando = []
+        self.asignaturas_completadas = [] # [(asignatura1, calificacion1), (asignatura2, calificacion2)....]
+        self.asignaturas_cursando = []    # [asignatura1, asignatura2, ...]
 
-    def aprobar_asignatura(self, asignatura, creditos):
-        self.asignaturas_completadas.append(asignatura)
+    def aprobar_asignatura(self, asignatura, creditos, calificacion):
+        if calificacion < 5:
+            raise ValueError('La asignatura debe aprobarse para ser completada.')
+        self.asignaturas_completadas.append((asignatura, calificacion))
         self.creditos_completados += creditos
         self.asignaturas_cursando.remove(asignatura)
 
     def añadir_asignatura_a_cursar(self, asignatura):
         if len(self.asignaturas_cursando) > 12:
-            raise ValueError('No se pueden cursar más de 12 asignaturas al mismo tiempo')
+            raise ValueError('No se pueden cursar más de 12 asignaturas al mismo tiempo.')
         self.asignaturas_cursando.append(asignatura)
 
     @classmethod
@@ -63,13 +65,17 @@ class Estudiante(Persona):
             print("El DNI no coincide.")
 
 
+    def visualizar_boletin_de_calificaciones(self):
+        for calificacion in self.asignaturas_completadas:
+            print(calificacion)
+
 class TipoDepartamento(Enum):
     DIIC = 1
     DITEC = 2
     DIS = 3
 
 #############################################################################
-        
+
 class Departamento:
     def __init__(self, nombre, director, area_estudio):
         if not isinstance(nombre, TipoDepartamento):
