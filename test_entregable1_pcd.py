@@ -41,17 +41,17 @@ class Estudiante(Persona):
         self.asignaturas_completadas = [] # [(asignatura1, calificacion1), (asignatura2, calificacion2)....]
         self.asignaturas_cursando = []    # [asignatura1, asignatura2, ...]
 
-    def aprobar_asignatura(self, asignatura, creditos, calificacion):
+    def aprobar_asignatura(self, asignatura, calificacion):
         if calificacion < 5:
             raise ValueError('La asignatura debe aprobarse para ser completada.')
-        self.asignaturas_completadas.append((asignatura, calificacion))
-        self.creditos_completados += creditos
-        self.asignaturas_cursando.remove(asignatura)
+        self.asignaturas_completadas.append((asignatura.nombre, calificacion))
+        self.creditos_completados += asignatura.creditos
+        self.asignaturas_cursando.remove(asignatura.nombre)
 
     def añadir_asignatura_a_cursar(self, asignatura):
         if len(self.asignaturas_cursando) > 12:
             raise ValueError('No se pueden cursar más de 12 asignaturas al mismo tiempo.')
-        self.asignaturas_cursando.append(asignatura)
+        self.asignaturas_cursando.append(asignatura.nombre)
 
     def visualizar_boletin_de_calificaciones(self):
         for calificacion in self.asignaturas_completadas:
@@ -147,16 +147,16 @@ class Profesor(MiembroDepartamento):
         self.perfil_linkedin = perfil_linkedin
         self.asignaturas_a_impartir = {}  # Ahora es un diccionario
 
-    def añadir_asignatura_a_impartir(self, grado, asignatura):
-        if grado not in self.asignaturas_a_impartir:
-            self.asignaturas_a_impartir[grado] = []  # Si el grado no está en el diccionario, añade una lista vacía
-        self.asignaturas_a_impartir[grado].append(asignatura)  # Añade la asignatura a la lista de ese grado
+    def añadir_asignatura_a_impartir(self, asignatura):
+        if asignatura.grado not in self.asignaturas_a_impartir:
+            self.asignaturas_a_impartir[asignatura.grado] = []  # Si el grado no está en el diccionario, añade una lista vacía
+        self.asignaturas_a_impartir[asignatura.grado].append(asignatura.nombre)  # Añade la asignatura a la lista de ese grado
 
-    def eliminar_asignatura_a_impartir(self, grado, asignatura):
-        if grado in self.asignaturas_a_impartir and asignatura in self.asignaturas_a_impartir[grado]:
-            self.asignaturas_a_impartir[grado].remove(asignatura)  # Elimina la asignatura de la lista de ese grado
-            if not self.asignaturas_a_impartir[grado]:  # Si la lista de ese grado está vacía, elimina el grado del diccionario
-                del self.asignaturas_a_impartir[grado]
+    def eliminar_asignatura_a_impartir(self, asignatura):
+        if asignatura.grado in self.asignaturas_a_impartir and asignatura.nombre in self.asignaturas_a_impartir[grado]:
+            self.asignaturas_a_impartir[asignatura.grado].remove(asignatura.nombre)  # Elimina la asignatura de la lista de ese grado
+            if not self.asignaturas_a_impartir[asignatura.grado]:  # Si la lista de ese grado está vacía, elimina el grado del diccionario
+                del self.asignaturas_a_impartir[asignatura.grado]
 
 class ProfesorAsociado(Profesor):
     def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin):
@@ -204,15 +204,15 @@ def test_persona_invalid_sex():
         Persona("John Doe", "12345678A", "Calle Falsa 123", "INVALID")
 
 def test_asignatura_creation():
-    asignatura = Asignatura("Matemáticas", "Ingeniería", 6, 3)
+    asignatura = Asignatura("Matemáticas", "Ingeniería", 6, PeriodoAsignatura(2))
     assert asignatura.nombre == "Matemáticas"
     assert asignatura.grado == "Ingeniería"
     assert asignatura.creditos == 6
-    assert asignatura.tipo == PeriodoAsignatura.ANUAL
+    assert asignatura.tipo == PeriodoAsignatura(2)
 
 def test_asignatura_invalid_type():
     with pytest.raises(TypeError):
-        Asignatura("Matemáticas", "Ingeniería", 6, "INVALID")
+        Asignatura("Matemáticas", "Ingeniería", 6, PeriodoAsignatura(2))
 
 if __name__=="__main__":
     r = Estudiante("FJMM", "26649110E", "Orellana, 22", "M", "MED", "1º")
