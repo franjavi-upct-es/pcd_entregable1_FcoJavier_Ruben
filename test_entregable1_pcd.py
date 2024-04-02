@@ -24,7 +24,7 @@ class Asignatura:
     def __init__(self, nombre, grado, creditos, tipo):
         self.nombre = nombre
         self.grado = grado
-        self.creditos = int(creditos)
+        self.creditos = creditos
         if not isinstance(tipo, PeriodoAsignatura):
             raise ValueError('Tipo debe ser un valor entre 1 y 3')
         self.tipo = tipo
@@ -56,6 +56,9 @@ class Estudiante(Persona):
     def visualizar_boletin_de_calificaciones(self):
         for calificacion in self.asignaturas_completadas:
             print(calificacion)
+
+    def visualizar_creditos_completados(self):
+        return self.creditos_completados
     
     def __str__(self):
         return f"Estudiante: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}"
@@ -152,7 +155,7 @@ class Profesor(MiembroDepartamento):
         self.asignaturas_a_impartir[asignatura.grado].append(asignatura.nombre)  # Añade la asignatura a la lista de ese grado
 
     def eliminar_asignatura_a_impartir(self, asignatura):
-        if asignatura.grado in self.asignaturas_a_impartir and asignatura.nombre in self.asignaturas_a_impartir[grado]:
+        if asignatura.grado in self.asignaturas_a_impartir and asignatura.nombre in self.asignaturas_a_impartir[asignatura.grado]:
             self.asignaturas_a_impartir[asignatura.grado].remove(asignatura.nombre)  # Elimina la asignatura de la lista de ese grado
             if not self.asignaturas_a_impartir[asignatura.grado]:  # Si la lista de ese grado está vacía, elimina el grado del diccionario
                 del self.asignaturas_a_impartir[asignatura.grado]
