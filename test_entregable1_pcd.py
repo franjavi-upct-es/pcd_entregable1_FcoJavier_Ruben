@@ -9,7 +9,7 @@ class Persona:
 
     def __init__(self, nombre, dni, direccion, sexo):
         self.nombre = nombre
-        self.__dni = dni
+        self.dni = dni
         self.direccion = direccion
         if sexo not in ['V', 'M', 'OTRO']:
             raise EmptyException("El sexo debe ser 'V', 'M' u 'OTRO'")
@@ -58,7 +58,7 @@ class Estudiante(Persona):
             print(calificacion)
     
     def __str__(self):
-        return f"Estudiante: {self.nombre}\nDNI: {self._Persona__dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}"
+        return f"Estudiante: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}"
 
     @classmethod
     def añadir_estudiante(cls, estudiante):
@@ -77,8 +77,6 @@ class TipoDepartamento(Enum):
     DITEC = 2
     DIS = 3
 
-#############################################################################
-
 class Departamento:
     def __init__(self, nombre, director, area_estudio):
         if not isinstance(nombre, TipoDepartamento):
@@ -86,25 +84,26 @@ class Departamento:
         self.nombre = nombre
         self.director = director
         self.area_estudio = area_estudio
-        self.miembros_dep = {}
+        self.miembros_dep = {TipoDepartamento.DIIC: [], TipoDepartamento.DITEC: [], TipoDepartamento.DIS: []}
 
     def añadir_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        self.miembros_dep[miembro.dni] = miembro  # Usamos add en lugar de append para añadir a un conjunto
+        self.miembros_dep[miembro.TipoDepartamento].append(miembro)
 
     def eliminar_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        if miembro.dni in self.miembros_dep:
-            del self.miembros_dep[miembro.dni]
+        if miembro in self.miembros_dep[miembro.TipoDepartamento]:
+            self.miembros_dep[miembro.TipoDepartamento].remove(miembro)
         else:  
-            return "DNI no coincide"
+            return "Miembro no encontrado"
 
     def buscar_miembro_dep(self, dni):
-        if self.dni in self.miembros_dep:
-            return self.nombre
-        else:
-            return "DNI no coincide"
+        for tipo in TipoDepartamento:
+            for miembro in self.miembros_dep[tipo]:
+                if miembro.dni == dni:
+                    return miembro
+        return "DNI no coincide"
 
     def __str__(self):
-        return f'Nombre: {self.nombre}\nMiembros: {self.miembros}'
+        return f'Nombre: {self.nombre}\nMiembros: {self.miembros_dep}'
 
 class MiembroDepartamento(Persona):
 
@@ -124,7 +123,7 @@ class MiembroDepartamento(Persona):
         self.departamento.añadir_miembro_dep(self)
 
     def __str__(self):
-        return f'Nombre: {self.nombre}\n DNI: {self.dni}\n Dirección: {self.direccion}\n Sexo: {self.sexo}\n Departamento: {self.departamento})'
+        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}'
 
     @classmethod
     def añadir_miembros(cls, miembro):
@@ -217,3 +216,9 @@ def test_asignatura_invalid_type():
 if __name__=="__main__":
     r = Estudiante("FJMM", "26649110E", "Orellana, 22", "M", "MED", "1º")
     print(r)
+
+    s = MiembroDepartamento("Antonio Galindo", "12345678B", "Hiedra 50", "V", TipoDepartamento.DITEC)
+
+    dep = Departamento
+    print(dep)
+    dep.añadir_miembro_dep(s)
