@@ -56,6 +56,9 @@ class Estudiante(Persona):
     def visualizar_boletin_de_calificaciones(self):
         for calificacion in self.asignaturas_completadas:
             print(calificacion)
+    
+    def __str__(self):
+        return f"Estudiante: {self.nombre}\nDNI: {self._Persona__dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}"
 
     @classmethod
     def añadir_estudiante(cls, estudiante):
@@ -67,6 +70,7 @@ class Estudiante(Persona):
             del cls.estudiantes[estudiante.dni]
         else:
             print("El DNI no coincide.")
+
 
 class TipoDepartamento(Enum):
     DIIC = 1
@@ -99,6 +103,9 @@ class Departamento:
         else:
             return "DNI no coincide"
 
+    def __str__(self):
+        return f'Nombre: {self.nombre}\nMiembros: {self.miembros}'
+
 class MiembroDepartamento(Persona):
 
     miembros = {}
@@ -115,6 +122,9 @@ class MiembroDepartamento(Persona):
         self.departamento.eliminar_miembro_dep(self) # Pasamos el objeto completo para poder acceder a su DNI
         self.departamento = nuevo_departamento
         self.departamento.añadir_miembro_dep(self)
+
+    def __str__(self):
+        return f'Nombre: {self.nombre}\n DNI: {self.dni}\n Dirección: {self.direccion}\n Sexo: {self.sexo}\n Departamento: {self.departamento})'
 
     @classmethod
     def añadir_miembros(cls, miembro):
@@ -153,12 +163,18 @@ class ProfesorAsociado(Profesor):
         super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
         self.asignaturas_a_impartir = {}
 
+    def __str__(self):
+        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\nCV: {self.cv}\nDoctorado: {self.doctorado}\nPerfil LinkedIn: {self.perfil_linkedin}\nAsignaturas a Impartir: {self.asignaturas_a_impartir}'
+
 class ProfesorTitular(Profesor):
     def __init__(self, nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin, area_investigacion, rol_investigacion):
         super().__init__(nombre, dni, direccion, sexo, departamento, cv, doctorado, perfil_linkedin)
         self.asignaturas_a_impartir = {}
         self.area_investigacion = area_investigacion
         self.rol_investigacion = rol_investigacion
+
+    def __str__(self):
+        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\nCV: {self.cv}\nDoctorado: {self.doctorado}\nPerfil LinkedIn: {self.perfil_linkedin}\nAsignaturas a Impartir: {self.asignaturas_a_impartir}\nÁrea de Investigación: {self.area_investigacion}\nRol de Investigación: {self.rol_investigacion}'
 
 
 #########################################################################
@@ -171,3 +187,33 @@ class Investigador(MiembroDepartamento):
         self.rol_investigacion = rol_investigacion
         self.__financiacion = financiacion
         self.papers_publicados = papers_publicados
+
+    def __str__(self):
+        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\nÁrea de Investigación: {self.area_investigacion}\nRol de Investigación: {self.rol_investigacion}\nPresupuesto: {self.presupuesto}\nPapers Publicados: {self.papers_publicados}'
+
+
+def test_persona_creation():
+    persona = Persona("John Doe", "12345678A", "Calle Falsa 123", "V")
+    assert persona.nombre == "John Doe"
+    assert persona.direccion == "Calle Falsa 123"
+    assert persona.sexo == "V"
+    print(persona)
+
+def test_persona_invalid_sex():
+    with pytest.raises(EmptyException):
+        Persona("John Doe", "12345678A", "Calle Falsa 123", "INVALID")
+
+def test_asignatura_creation():
+    asignatura = Asignatura("Matemáticas", "Ingeniería", 6, 3)
+    assert asignatura.nombre == "Matemáticas"
+    assert asignatura.grado == "Ingeniería"
+    assert asignatura.creditos == 6
+    assert asignatura.tipo == PeriodoAsignatura.ANUAL
+
+def test_asignatura_invalid_type():
+    with pytest.raises(TypeError):
+        Asignatura("Matemáticas", "Ingeniería", 6, "INVALID")
+
+if __name__=="__main__":
+    r = Estudiante("FJMM", "26649110E", "Orellana, 22", "M", "MED", "1º")
+    print(r)
