@@ -61,7 +61,7 @@ class Estudiante(Persona):
         return self.creditos_completados
     
     def __str__(self):
-        return f"Estudiante: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}"
+        return f"Estudiante: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}\n"
 
     @classmethod
     def añadir_estudiante(cls, estudiante):
@@ -80,33 +80,49 @@ class TipoDepartamento(Enum):
     DITEC = 2
     DIS = 3
 
+    def __str__(self):
+        return self.name
+
 class Departamento:
-    def __init__(self, nombre, director, area_estudio):
-        if not isinstance(nombre, TipoDepartamento):
-            raise ValueError('El nombre de departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
-        self.nombre = nombre
-        self.director = director
-        self.area_estudio = area_estudio
-        self.miembros_dep = {TipoDepartamento.DIIC: [], TipoDepartamento.DITEC: [], TipoDepartamento.DIS: []}
+    miembros_dep = {TipoDepartamento.DIIC: [], TipoDepartamento.DITEC: [], TipoDepartamento.DIS: []}
 
-    def añadir_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        self.miembros_dep[miembro.TipoDepartamento].append(miembro)
+    @classmethod
+    def añadir_miembro_dep(cls, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
+        cls.miembros_dep[miembro.departamento].append(miembro)
 
-    def eliminar_miembro_dep(self, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        if miembro in self.miembros_dep[miembro.TipoDepartamento]:
-            self.miembros_dep[miembro.TipoDepartamento].remove(miembro)
-        else:  
-            return "Miembro no encontrado"
-
-    def buscar_miembro_dep(self, dni):
+    @classmethod
+    def eliminar_miembro_dep(cls, dni):
         for tipo in TipoDepartamento:
-            for miembro in self.miembros_dep[tipo]:
+            for miembro in cls.miembros_dep[tipo]:
                 if miembro.dni == dni:
-                    return miembro
+                    cls.miembros_dep[tipo].remove(miembro)
+                    return
+                else:
+                    return "DNI no encontrado"
+
+    @classmethod
+    def buscar_miembro_dep(cls, dni):
+        for tipo in TipoDepartamento:
+            for miembro in cls.miembros_dep[tipo]:
+                if miembro.dni == dni:
+                    print(f"Miembro encontrado: {miembro.nombre}")  # Debug print
+                    return miembro.nombre
+        print("DNI no coincide")  # Debug print
         return "DNI no coincide"
 
-    def __str__(self):
-        return f'Nombre: {self.nombre}\nMiembros: {self.miembros_dep}'
+    @classmethod
+    def __str__(cls):
+        return '\n'.join(
+            f'Departamento: {tipo}\nMiembros:\n' + 
+            '\n'.join(
+                f"\tNombre: {member.nombre}\n\t"
+                f"DNI: {member.dni}\n\t"
+                f"Dirección: {member.direccion}\n\t"
+                f"Sexo: {member.sexo}\n\t"
+                for member in cls.miembros_dep[tipo]
+            )
+            for tipo in TipoDepartamento
+        )
 
 class MiembroDepartamento(Persona):
 
@@ -119,14 +135,12 @@ class MiembroDepartamento(Persona):
         self.departamento = departamento
 
     def cambiar_departamento(self, nuevo_departamento):
-        if not isinstance(nuevo_departamento, TipoDepartamento):
-            raise ValueError('El nuevo departamento debe ser uno de los tres definidos(DIIC, DITEC, DIS)')
-        self.departamento.eliminar_miembro_dep(self) # Pasamos el objeto completo para poder acceder a su DNI
+        Departamento.eliminar_miembro_dep(self)  # Pasamos el objeto completo para poder acceder a su DNI
+        Departamento.añadir_miembro_dep(self)
         self.departamento = nuevo_departamento
-        self.departamento.añadir_miembro_dep(self)
 
     def __str__(self):
-        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}'
+        return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\n'
 
     @classmethod
     def añadir_miembros(cls, miembro):
@@ -220,8 +234,13 @@ if __name__=="__main__":
     r = Estudiante("FJMM", "26649110E", "Orellana, 22", "M", "MED", "1º")
     print(r)
 
-    s = MiembroDepartamento("Antonio Galindo", "12345678B", "Hiedra 50", "V", TipoDepartamento.DITEC)
+    s = MiembroDepartamento("Antonio Galindo", "12345678B", "Hiedra 50", "V", TipoDepartamento(2))
+    t = MiembroDepartamento("Rubén Gil", "22985630M", "Fuster 1", "V", TipoDepartamento(2))
 
-    dep = Departamento
-    print(dep)
-    dep.añadir_miembro_dep(s)
+    Departamento.añadir_miembro_dep(s)
+    Departamento.añadir_miembro_dep(t)
+    t.cambiar_departamento(TipoDepartamento(1))
+    print(Departamento())
+    Departamento.eliminar_miembro_dep("22985630M")
+    print(Departamento())
+    Departamento.buscar_miembro_dep("22985630M")
