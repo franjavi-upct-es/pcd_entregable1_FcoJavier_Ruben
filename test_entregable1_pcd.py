@@ -63,18 +63,7 @@ class Estudiante(Persona):
     def __str__(self):
         return f"Estudiante: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nGrado: {self.grado}\nCurso: {self.curso}\n"
 
-    @classmethod
-    def añadir_estudiante(cls, estudiante):
-        cls.estudiantes[estudiante.dni] = estudiante
-
-    @classmethod
-    def eliminar_estudiante(cls, estudiante):
-        if estudiante.dni in cls.estudiantes:
-            del cls.estudiantes[estudiante.dni]
-        else:
-            print("El DNI no coincide.")
-
-
+    
 class TipoDepartamento(Enum):
     DIIC = 1
     DITEC = 2
@@ -86,43 +75,7 @@ class TipoDepartamento(Enum):
 class Departamento:
     miembros_dep = {TipoDepartamento.DIIC: [], TipoDepartamento.DITEC: [], TipoDepartamento.DIS: []}
 
-    @classmethod
-    def añadir_miembro_dep(cls, miembro):  # OBJETO MIEMBRO DE DEPARTAMENTO
-        cls.miembros_dep[miembro.departamento].append(miembro)
-
-    @classmethod
-    def eliminar_miembro_dep(cls, dni):
-        for tipo in TipoDepartamento:
-            for miembro in cls.miembros_dep[tipo]:
-                if miembro.dni == dni:
-                    cls.miembros_dep[tipo].remove(miembro)
-                    return
-                else:
-                    return "DNI no encontrado"
-
-    @classmethod
-    def buscar_miembro_dep(cls, dni):
-        for tipo in TipoDepartamento:
-            for miembro in cls.miembros_dep[tipo]:
-                if miembro.dni == dni:
-                    print(f"Miembro encontrado: {miembro.nombre}")  # Debug print
-                    return miembro.nombre
-        print("DNI no coincide")  # Debug print
-        return "DNI no coincide"
-
-    @classmethod
-    def __str__(cls):
-        return '\n'.join(
-            f'Departamento: {tipo}\nMiembros:\n' + 
-            '\n'.join(
-                f"\tNombre: {member.nombre}\n\t"
-                f"DNI: {member.dni}\n\t"
-                f"Dirección: {member.direccion}\n\t"
-                f"Sexo: {member.sexo}\n\t"
-                for member in cls.miembros_dep[tipo]
-            )
-            for tipo in TipoDepartamento
-        )
+    
 
 class MiembroDepartamento(Persona):
 
@@ -142,16 +95,7 @@ class MiembroDepartamento(Persona):
     def __str__(self):
         return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\n'
 
-    @classmethod
-    def añadir_miembros(cls, miembro):
-        cls.miembros[miembro.dni] = miembro
-
-    @classmethod
-    def eliminar_miembros(cls, miembro):
-        if miembro.dni in cls.miembros:
-            del cls.miembros[miembro.dni]
-        else:
-            print("El DNI no coincide.")
+    
     
 
 ##############################################################################
