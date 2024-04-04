@@ -41,7 +41,7 @@ class Asignatura:
         self.estudiantes_matriculados.remove(profesor)
 
     def __str__(self):
-        return f"Asignatura: {self.nombre}\nGrado: {self.grado}\nCréditos: {self.creditos}"
+        return f"Asignatura: {self.nombre}\nGrado: {self.grado}\nCréditos: {self.creditos}\nPeriodo: {str(self.tipo)}"
 
 class Estudiante(Persona):
 
@@ -86,7 +86,7 @@ class TipoDepartamento(Enum):
     def __str__(self):
         return self.name # A la hora de imprimir, devuelve el nombre del departamento como "str"
 
-    
+## PODREMOS CAMBIAR PARA PODER IMPRIMIR DEPARTAMENTO???
 
 class MiembroDepartamento(Persona):
 
@@ -121,6 +121,8 @@ class ProfesorAsociado(MiembroDepartamento):
 
     def __str__(self):
         return f'Nombre: {self.nombre}\nDNI: {self.dni}\nDirección: {self.direccion}\nSexo: {self.sexo}\nDepartamento: {self.departamento}\nAsignaturas a Impartir: {self.asignaturas_a_impartir}\n'
+
+
 
 class ProfesorTitular(MiembroDepartamento):
     def __init__(self, nombre, dni, direccion, sexo, departamento, rol_investigacion):
@@ -160,7 +162,8 @@ class Universidad:
         self.profesores = profesores if profesores is not None else []
         self.investigadores = investigadores if investigadores is not None else []
         self.asignaturas = asignaturas if asignaturas is not None else []
-        self.miembros_dep = miembros_dep if miembros_dep is not None else {}
+        self.miembros_dep = miembros_dep if miembros_dep is not None else {} # NOS SERVIRA PARA MOSTRAR UNA LISTA DE MIEMBROS PERTENENECIENTES A CADA DEPARTAMENTO
+
 
     def buscar_estudiante(self, dni):
         for estudiante in self.estudiantes:
@@ -219,7 +222,7 @@ class Universidad:
         self.investigadores.append(prof_titular)
         self.añadir_miembro_dep(prof_titular.dni)
 
-    def insertar_investigador(self, nombre, direccion, sexo, departamento, rol_investigacion):
+    def insertar_investigador(self, nombre, dni, direccion, sexo, departamento, rol_investigacion):
         inves = Investigador(nombre, dni, direccion, sexo, departamento, rol_investigacion)
         self.investigadores.append(inves)
         self.añadir_miembro_dep(inves.dni)
