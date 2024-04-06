@@ -155,14 +155,15 @@ class Universidad:
         self.asignaturas = asignaturas if asignaturas is not None else []
         self.miembros_dep = miembros_dep if miembros_dep is not None else {} # NOS SERVIRA PARA MOSTRAR UNA LISTA DE MIEMBROS PERTENENECIENTES A CADA DEPARTAMENTO
 
-# Los métodos de búsqueda se podrán como privados ya que servirán sólamente de apoyo
+# Los métodos de búsqueda se podrán como privados ya que servirán sólamente de apoyo a los métodos funcionales.
 
+# MÉTODOS PRIVADOS:
     def __buscar_estudiante(self, dni):
         for estudiante in self.estudiantes:
             if dni == estudiante.dni:
                 return estudiante
         return "DNI no coincide"
-    
+
     def __buscar_profesor(self, dni):
         for profesor in self.profesores:
             if dni == profesor.dni:
@@ -174,7 +175,7 @@ class Universidad:
             if dni == investigador.dni:
                 return investigador
         return "DNI no coincide"
-
+    
     def __buscar_asignatura(self, id):
         for asignatura in self.asignaturas:
             if id == asignatura.id:
@@ -182,7 +183,7 @@ class Universidad:
         return "Asignatura no encontrada"
 
 
-    def añadir_miembro_dep(self, dni):
+    def __añadir_miembro_dep(self, dni):
         miembro = self.__buscar_profesor(dni)
 
         if miembro == "DNI no coincide":
@@ -195,7 +196,7 @@ class Universidad:
         else:
             return "DNI no coincide"
     
-    def eliminar_miembro_dep(self, dni):
+    def __eliminar_miembro_dep(self, dni):
         miembro = self.__buscar_profesor(dni)
 
         if miembro == "DNI no coincide":
@@ -206,32 +207,64 @@ class Universidad:
         # Como el número de departamentos es fijo, aunque se quede sin miembros, no desaparecerá el departamento
         else:
             return "DNI no coincide"
-    
+
+
+
+# MÉTODOS GENERALES Y FUNCIONALES DEL SISTEMA:
     def insertar_estudiante(self, nombre, dni, direccion, sexo, grado, curso):
+        estudiante = self.__buscar_estudiante(dni)
+        if estudiante != "DNI no coincide":
+            raise Exception("El estudiante que tratas de insertar ya está registrado.")
+        else:
+            estudiante = Estudiante(nombre, dni, direccion, sexo, grado, curso)
+            self.estudiantes.append(estudiante)
+
+    '''def insertar_estudiante(self, nombre, dni, direccion, sexo, grado, curso):
+        estudiante = self.__buscar_estudiante(dni)
+        if estudiante == object:
+            raise Exception("El estudiante que tratas de insertar ya está registrado.")
+        else:
+            pass
         estudiante = Estudiante(nombre, dni, direccion, sexo, grado, curso)
-        self.estudiantes.append(estudiante)
+        self.estudiantes.append(estudiante)'''
     
     def insertar_prof_asociado(self, nombre, dni, direccion, sexo, departamento):
-        prof_asoc = ProfesorAsociado(nombre, dni, direccion, sexo, departamento)
-        self.profesores.append(prof_asoc)
-        self.añadir_miembro_dep(prof_asoc.dni)
+        prof = self.__buscar_profesor(dni)
+        if prof != "DNI no coincide":
+            raise Exception("El profesor que tratas de insertar ya está registrado.")
+        else:
+            prof_asoc = ProfesorAsociado(nombre, dni, direccion, sexo, departamento)
+            self.profesores.append(prof_asoc)
+            self.__añadir_miembro_dep(prof_asoc.dni)
     
     def insertar_prof_titular(self, nombre, dni, direccion, sexo, departamento, area_investigacion):
-        prof_titular = ProfesorTitular(nombre, dni, direccion, sexo, departamento, area_investigacion)
-        inves = Investigador(nombre, dni, direccion, sexo, departamento, area_investigacion)
-        self.profesores.append(prof_titular)
-        self.investigadores.append(inves)
-        self.añadir_miembro_dep(prof_titular.dni)
+        prof = self.__buscar_profesor(dni)
+        if prof != "DNI no coincide":
+            raise Exception("El profesor que tratas de insertar ya está registrado.")
+        else:
+            prof_titular = ProfesorTitular(nombre, dni, direccion, sexo, departamento, area_investigacion) # Lo registramos con las dos posiciones que lleva a cabo trabajando
+            inves = Investigador(nombre, dni, direccion, sexo, departamento, area_investigacion)
+            self.profesores.append(prof_titular)
+            self.investigadores.append(inves)
+            self.__añadir_miembro_dep(prof_titular.dni) # Solo lo añdimos una vez como miembro porque sino saldría por duplicado, uno como Titular y otro como Investigador.
 
     def insertar_investigador(self, nombre, dni, direccion, sexo, departamento, area_investigacion):
-        inves = Investigador(nombre, dni, direccion, sexo, departamento, area_investigacion)
-        self.investigadores.append(inves)
-        self.añadir_miembro_dep(inves.dni)
-    
+        invst = self.__buscar_investigador(dni)
+        if invst != "DNI no coincide":
+            raise Exception("El investigador que tratas de insertar ya está registrado.")
+        else:
+            inves = Investigador(nombre, dni, direccion, sexo, departamento, area_investigacion)
+            self.investigadores.append(inves)
+            self.__añadir_miembro_dep(inves.dni)
+        
     def insertar_asignatura(self, id, nombre, grado, creditos, tipo):
-        assert tipo in PeriodoAsignatura, "Tipo de asignatura inválido, la asignatura debe ser anual o cuatrimestral (primer o segundo cuatrimestre)"
-        asignatura = Asignatura(id, nombre, grado, creditos, tipo)
-        self.asignaturas.append(asignatura)
+        asig = self.__buscar_asignatura(id)
+        if asig != "Asignatura no encontrada":
+            raise Exception("Esta asignatura ya está siendo impartida en nuestra universidad.")
+        else:
+            assert tipo in PeriodoAsignatura, "Tipo de asignatura inválido, la asignatura debe ser anual o cuatrimestral (primer o segundo cuatrimestre)"
+            asignatura = Asignatura(id, nombre, grado, creditos, tipo)
+            self.asignaturas.append(asignatura)
 
     def cambio_departamento(self, dni, nuevo_departamento):
         assert nuevo_departamento in TipoDepartamento, "Departamento inválido, el departamento debe ser uno de los tres definidos (DIIC, DITEC, DIS)"
@@ -241,10 +274,10 @@ class Universidad:
             
         
         if miembro != "DNI no coincide":
-            self.eliminar_miembro_dep(miembro.dni)  # Eliminamos al miembro de su antiguo dep
+            self.__eliminar_miembro_dep(miembro.dni)  # Eliminamos al miembro de su antiguo dep
             miembro.cambio_dep(nuevo_departamento) # Actualizamos info nuevo dep
-            self.añadir_miembro_dep(miembro.dni)  # Añadimos el miembro al nuevo departamento
-            return f"{miembro.nombre} se ha cambiado al departamento {miembro.departamento}"
+            self.__añadir_miembro_dep(miembro.dni)  # Añadimos el miembro al nuevo departamento
+            print(f"{miembro.nombre} se ha cambiado al departamento {miembro.departamento}")
         else:
             return "DNI no coincide"
 
@@ -255,14 +288,16 @@ class Universidad:
             self.estudiantes.remove(estudiante)
             for asignatura in estudiante.asignaturas_cursando:
                 asignatura.eliminar_estudiantes(estudiante)
+        print(f"\n{estudiante.nombre} ha sido eliminado del sistema.")
 
     def eliminar_profesor(self, dni):
         prof = self.__buscar_profesor(dni)
         inves = self.__buscar_investigador(dni)
 
         if prof is not None:
+            self.__eliminar_miembro_dep(dni)
             self.profesores.remove(prof)
-            self.eliminar_miembro_dep(dni)
+            
             for asignatura in prof.asignaturas_a_impartir:
                 asignatura.eliminar_profesor(prof)
 
@@ -272,13 +307,19 @@ class Universidad:
             except ValueError:
                 print(f"DNI no coincide")
 
+        print(f"\n{prof.nombre} ha sido eliminado del sistema.")
+
 
     def eliminar_investigador(self, dni):
         inves = self.__buscar_investigador(dni)
         if inves is not None:
+            self.__eliminar_miembro_dep(dni)
             self.investigadores.remove(inves)
-            self.eliminar_miembro_dep(dni)
-    
+
+        print(f"\n{inves.nombre} ha sido eliminado del sistema.")
+
+
+
     def añadir_asignatura_a_cursar(self, dni, id_asig):
         asignatura = self.__buscar_asignatura(id_asig)
         estudiante = self.__buscar_estudiante(dni)
@@ -287,6 +328,7 @@ class Universidad:
         estudiante.añadir_asignatura_matriculada(asignatura)
         asignatura.añadir_estudiantes(estudiante)
         print(f"{estudiante.nombre} se ha matriculado en la asignatura de {asignatura.nombre}\n")
+
 
     def aprobar_asignatura(self, dni, id_asig, calificacion):
         if calificacion < 5:
@@ -304,7 +346,6 @@ class Universidad:
         estudiante = self.__buscar_estudiante(dni)
         print(f"Boletín de Calificaciones de {estudiante.nombre}:\n")
         for asig, nota in estudiante.asignaturas_completadas:
-            
             print(f"{asig}: {nota}\n")
             
     
@@ -314,24 +355,13 @@ class Universidad:
         print(f"{estudiante.nombre} lleva {estudiante.creditos_completados} créditos completados.\n")
 
 
-    def visualizar_est_matriculados_y_profesores_asig(self, id_asig):
-        asignatura = self.__buscar_asignatura(id_asig)
-        print(f"Profesores y estudiantes de {asignatura.nombre}: \n Profesores:")
-        for p in asignatura.profesores:
-            print(f"{p.nombre}\n")
-        print("Alumnos matriculados:")
-        for e in asignatura.estudiantes_matriculados:
-            print(f"{e.nombre}\n")
-
-
     def asignar_profesorado_a_asignatura(self, dni, id_asig):
         prof = self.__buscar_profesor(dni)
         asignatura = self.__buscar_asignatura(id_asig)
         prof.añadir_asignatura_a_impartir(asignatura)
         asignatura.añadir_profesor(prof)
-        print(f"Al profesor {prof.nombre} se le ha asignado la asignatura de {asignatura.nombre} para el grado de {asignatura.grado}\n")
+        print(f"Profesor/a {prof.nombre} se le ha asignado la asignatura de {asignatura.nombre} para el grado de {asignatura.grado}\n")
     
-
     def eliminar_profesorado_de_asignatura(self, dni, id_asig):
         prof = self.__buscar_profesor(dni)
         asignatura = self.__buscar_asignatura(id_asig)
@@ -342,12 +372,22 @@ class Universidad:
 
     def visualizar_asignaturas_de_profesor(self, dni):
         prof = self.__buscar_profesor(dni)
-        print(f"El profesor/a {prof.nombre} está impartiendo clase en: \n ")
+        print(f"El/La profesor/a {prof.nombre} está impartiendo clase en:")
         for curso, asignaturas in prof.asignaturas_a_impartir.items():
-            print(f"Grado: {curso}, Asignaturas: {asignaturas}")
+            print(f"\nGrado: {curso}\n Asignaturas:")
+            for a in asignaturas:
+                print(a)
 
+    def visualizar_est_matriculados_y_profesores_asig(self, id_asig):
+        asignatura = self.__buscar_asignatura(id_asig)
+        print(f"Profesores y estudiantes de {asignatura.nombre}: \n Profesores:")
+        for p in asignatura.profesores:
+            print(f"{p.nombre}\n")
+        print("Alumnos matriculados:")
+        for e in asignatura.estudiantes_matriculados:
+            print(f"{e.nombre}\n")
 
-    def buscar_en_departamentos(self, dni):
+    def departamento_del_miembro(self, dni):
         miembro = self.__buscar_profesor(dni)
         if miembro == "DNI no coincide":
             miembro = self.__buscar_investigador(dni)
@@ -355,12 +395,12 @@ class Universidad:
         if miembro != "DNI no coincide":
             return miembro.departamento # Devuelve el departamento del miembro al que corresponda el dni
         return "DNI no coincide"
-
+    
     def print_miembros_dep(self):
         for tipo, miembros in self.miembros_dep.items():
-            print(f'Departamento: {tipo}\nMiembros:')
+            print(f'\nDepartamento: {tipo}\nMiembros:')
             for member in miembros:
-                print(member)
+                print(member.nombre)
                 
 
     def __str__(self):
@@ -431,93 +471,101 @@ def test_cambio_departamento():
     uni.cambio_departamento("34567890E", TipoDepartamento(1))
     assert uni.profesores[0].departamento == TipoDepartamento(1)
     
-def test_buscar_en_departamentos():
+def test_departamento_del_miembro():
     uni = Universidad("UPCT", "Cartagena", 30390)
     uni.insertar_prof_titular("Alice Johnson", "34567890E", "789 Oak St", "OTRO", TipoDepartamento(2), "Computer Science")
-    assert uni.buscar_en_departamentos("34567890E") == uni.profesores[0].departamento
+    assert uni.departamento_del_miembro("34567890E") == uni.profesores[0].departamento
+
+
+# AQUÍ MOSTRAMOS UN CÓDIGO DE PRUEBA EN EJECUCIÓN PARA MOSTRAR EL FUNCIONAMIENTO DE LOS DIVERSOS MÉTODOS FUNCIONALES GENERADOS:
 
 if __name__=='__main__':
     uni = Universidad("UPCT", "Cartagena", 30390)
 
     # Test insertar_estudiante
     uni.insertar_estudiante("John Doe", "87654321C", "123 Main St", "V", "Data Science", "1º")
-    uni.insertar_estudiante("Carlos Garcia", "12345678A", "Calle Falsa 123", "V", "Matemáticas", "1º")
-    uni.insertar_estudiante("Ana Martinez", "87654321B", "Avenida Siempre Viva 456", "M", "Física", "2º")
-    uni.insertar_estudiante("Pedro Lopez", "23456789C", "Paseo de la Castellana 789", "V", "Química", "3º")
+    uni.insertar_estudiante("Carlos Garcia", "12345678A", "Calle Falsa 123", "V", "Matemáticas", "2º")
+    uni.insertar_estudiante("Jesús María Garcia", "26354892B", "Calle Santiago 1", "V", "Física", "2º")
 
     # Test insertar_prof_asociado
-    uni.insertar_prof_asociado("Jane Smith", "23456789D", "456 Elm St", "M", TipoDepartamento(1))
-    uni.insertar_prof_asociado("Luis Perez", "56789012G", "Calle del Sol 123", "V", TipoDepartamento(1))
+    uni.insertar_prof_asociado("Luis Perez", "56789012G", "Calle del Sol 123", "V", TipoDepartamento(3))
     uni.insertar_prof_asociado("Maria Gomez", "67890123H", "Avenida de la Luna 456", "M", TipoDepartamento(2))
 
     # Test insertar_prof_titular
     uni.insertar_prof_titular("Alice Johnson", "34567890E", "789 Oak St", "OTRO", TipoDepartamento(2), "Computación")
-    uni.insertar_prof_titular("Jose Ramirez", "78901234I", "Paseo de las Estrellas 789", "V", TipoDepartamento(1), "Biología")
+    uni.insertar_prof_titular("Jose Ramirez", "78901234I", "Paseo de las Estrellas 789", "V", TipoDepartamento(3), "Biología")
     uni.insertar_prof_titular("Isabel Torres", "89012345J", "Calle de la Tierra 987", "M", TipoDepartamento(1), "IA Generativa")
 
     # Test insertar_investigador
-    uni.insertar_investigador("Bob Williams", "45678901F", "987 Pine St", "V", TipoDepartamento(3), "Computación")
-    uni.insertar_investigador("Antonio Ruiz", "90123456K", "Avenida del Universo 321", "V", TipoDepartamento(1), "Astronomía")
-    uni.insertar_investigador("Carmen Morales", "01234567L", "Paseo de la Galaxia 654", "M", TipoDepartamento(2), "AstroFísica")
+
+    uni.insertar_investigador("Antonio Ruiz", "90123456K", "Avenida del Universo 321", "V", TipoDepartamento(1), "AstroFísica")
+    uni.insertar_investigador("Carmen Morales", "01234567L", "Paseo de la Galaxia 654", "M", TipoDepartamento(2), "Computación")
 
     # Insertar asignaturas
     uni.insertar_asignatura("9990123", "Machine Learning I", "Data Science", 6,  PeriodoAsignatura(2))
     uni.insertar_asignatura("9990820", "Calculo", "Matemáticas", 6,  PeriodoAsignatura(2))
-    uni.insertar_asignatura("9990007", "Calculo", "Data Science", 6,  PeriodoAsignatura(2))
-    uni.insertar_asignatura("9990321", "Calculo", "Física", 6,  PeriodoAsignatura(2))
+    uni.insertar_asignatura("9990007", "Calculo", "Data Science", 6,  PeriodoAsignatura(3))
+    uni.insertar_asignatura("9990321", "Calculo", "Física", 6,  PeriodoAsignatura(3))
     uni.insertar_asignatura("9990035", "Física", "Matemáticas", 6, PeriodoAsignatura(1))
     uni.insertar_asignatura("999006I", "Química molecular II", "Química", 6, PeriodoAsignatura(1))
     uni.insertar_asignatura("999006V", "Compuestos biorgánicos", "Química", 6, PeriodoAsignatura(1))
     uni.insertar_asignatura("99901AT", "Bases Datos II", "Data Science", 6, PeriodoAsignatura(2))
-    uni.insertar_asignatura("99900XP", "Astronomía", "Física", 6, PeriodoAsignatura(2))
-    uni.insertar_asignatura("999007I", "AstroFísica", "Física", 6, PeriodoAsignatura(3))
+
     
-    "COMENTARIO: BUENAS PROFESOR, DEJAMOS LOS COMANDOS COMENTADOS PARA QUE LE SEA MÁS FÁCIL LA VISUALIZACIÓN DE LO QUE REALIZA CADA MÉTODO."
+
     
-    "IMPRESIÓN INFO UNIVERIDAD:"
-    #print(uni)
+    print("INFO UNIVERIDAD:\n")
+    print(uni)
     
-    "IMPRESIÓN DEPARTAMENTOS JUNTO A SUS MIEMBROS:"
-    #uni.print_miembros_dep()
+    print("\n\nIMPRESIÓN DEPARTAMENTOS JUNTO A SUS MIEMBROS: \n")
+    uni.print_miembros_dep()
 
-    "PODEMOS OBSERVAR COMO ANTONIO RUIZ Y ISABEL TORRES CAMBIAN DE DEPARTAMENTO(TAMBIÉN LO HACEN A NIVEL INTERNO)"
-    #uni.cambio_departamento("89012345J", TipoDepartamento(3))
-    #uni.cambio_departamento("90123456K", TipoDepartamento(2))
+    print("\n\n SI QUEREMOS SABER EL DEPARTAMENTO AL QUE PERTENECE UN MIEMBRO ESPECÍFICO:")
+    print("El miembro con DNI 89012345J pertenece a:", uni.departamento_del_miembro("89012345J"))
 
-    #uni.print_miembros_dep()
+    print("\n\nPODEMOS OBSERVAR COMO ANTONIO RUIZ Y ISABEL TORRES CAMBIAN DE DEPARTAMENTO HACIENDO QUE DIIC QUEDE VACÍO PERO SIGUE EXISTIENDO:\n")
+    uni.cambio_departamento("89012345J", TipoDepartamento(3))
+    uni.cambio_departamento("90123456K", TipoDepartamento(2))
+    
+    print()
+    uni.print_miembros_dep()
 
-    "ELIMINACIÓN DE OBJETOS DEL SISTEMA:"
-
-    '''for e in uni.estudiantes:
-        print(e)
-    uni.eliminar_estudiante("87654321C")
-
-    print("ALUMNO ELIMINADO DEL SISTEMA:")
+    print("\n\nELIMINACIÓN DE OBJETOS DEL SISTEMA:")
+    print("Estudiantes:")
     for e in uni.estudiantes:
-        print(e)'''
+        print(e.nombre)
+    uni.eliminar_estudiante("26354892B")
+
+    print("\nALUMNO ELIMINADO DEL SISTEMA:")
+    print("Estudiantes restantes:")
+    for e in uni.estudiantes:
+        print(e.nombre)
 
 
-    '''uni.print_miembros_dep()
+    print("\n\nProfesores:")
     for p in uni.profesores:
-        print(p)
-    uni.eliminar_profesor("78901234I")  ERROR!!!!!!!!!
+        print(p.nombre)
+    uni.eliminar_profesor("78901234I")    
 
-    print("PROFESOR ELIMINADO DEL SISTEMA:")
+    print("\nPROFESOR ELIMINADO DEL SISTEMA:")
+    print("Profesores restantes:")
     for p in uni.profesores:
-        print(p)'''
-    
+        print(p.nombre)
 
-    
-    '''for i in uni.investigadores:
-        print(i)
+    uni.print_miembros_dep()
+
+
+    print("\n\nInvestigadores:")
+    for i in uni.investigadores:
+        print(i.nombre)                 
     uni.eliminar_investigador("01234567L") 
 
-    print("INVESTIGADOR ELIMINADO DEL SISTEMA:")
+    print("\nINVESTIGADOR ELIMINADO DEL SISTEMA:")
     for i in uni.investigadores:
-        print(i)
+        print(i.nombre)
     
 
-    uni.print_miembros_dep()'''
+    uni.print_miembros_dep()
 
 
     print()
