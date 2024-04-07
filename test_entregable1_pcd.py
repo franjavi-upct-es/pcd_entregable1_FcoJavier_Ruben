@@ -360,23 +360,23 @@ class Universidad:
         asignatura = self.__buscar_asignatura(id_asig)
         prof.añadir_asignatura_a_impartir(asignatura)
         asignatura.añadir_profesor(prof)
-        print(f"Profesor/a {prof.nombre} se le ha asignado la asignatura de {asignatura.nombre} para el grado de {asignatura.grado}\n")
+        print(f"A {prof.nombre} se le ha asignado la asignatura de {asignatura.nombre} para el grado de {asignatura.grado}\n")
     
     def eliminar_profesorado_de_asignatura(self, dni, id_asig):
         prof = self.__buscar_profesor(dni)
         asignatura = self.__buscar_asignatura(id_asig)
         prof.eliminar_asignatura_a_impartir(asignatura)
         asignatura.eliminar_profesor(prof)
-        print(f"El profesor {prof.nombre} dejará de impartir la asignatura de {asignatura.nombre} en el grado de {asignatura.grado}\n")
+        print(f"{prof.nombre} dejará de impartir la asignatura de {asignatura.nombre} en el grado de {asignatura.grado}\n")
 
 
     def visualizar_asignaturas_de_profesor(self, dni):
         prof = self.__buscar_profesor(dni)
-        print(f"El/La profesor/a {prof.nombre} está impartiendo clase en:")
+        print(f"{prof.nombre} está impartiendo clase en:")
         for curso, asignaturas in prof.asignaturas_a_impartir.items():
-            print(f"\nGrado: {curso}\n Asignaturas:")
+            print(f"\nGrado: {curso}\nAsignaturas:")
             for a in asignaturas:
-                print(a)
+                print("\n\t",a)
 
     def visualizar_est_matriculados_y_profesores_asig(self, id_asig):
         asignatura = self.__buscar_asignatura(id_asig)
@@ -431,8 +431,9 @@ def test_insertar_estudiante():
 def test_insertar_prof_asociado():
     uni = Universidad("UPCT", "Cartagena", 30390)
     uni.insertar_prof_asociado("Jane Smith", "23456789D", "456 Elm St", "M", TipoDepartamento(1))
-    assert len(uni.profesores) >= 1
+    assert len(uni.profesores) == 1
     assert uni.profesores[0].nombre == "Jane Smith"
+    assert len(uni.miembros_dep[TipoDepartamento(1)]) == 1
 
 def test_insertar_prof_titular():
     uni = Universidad("UPCT", "Cartagena", 30390)
@@ -440,24 +441,33 @@ def test_insertar_prof_titular():
     assert len(uni.profesores) > 0
     assert len(uni.investigadores) > 0
     assert uni.profesores[0].nombre == "Alice Johnson"
+    assert len(uni.miembros_dep[TipoDepartamento(2)]) == 1
+
+def test_insertar_investigador():
+    uni = Universidad("UPCT", "Cartagena", 30390)
+    uni.insertar_investigador("Carmen Morales", "01234567L", "Paseo de la Galaxia 654", "M", TipoDepartamento(2), "Computación")
+    assert len(uni.investigadores) > 0
+    assert len(uni.miembros_dep[TipoDepartamento(2)]) == 1
 
 def test_eliminar_estudiante():
     uni = Universidad("UPCT", "Cartagena", 30390)
     uni.insertar_estudiante("John Doe", "87654321C", "123 Main St", "V", "Data Science", "1st")
     uni.eliminar_estudiante("87654321C")
-    assert len(uni.estudiantes) < 1
+    assert len(uni.estudiantes) == 0
 
 def test_eliminar_profesor():
     uni = Universidad("UPCT", "Cartagena", 30390)
     uni.insertar_prof_asociado("Jane Smith", "23456789D", "456 Elm St", "M", TipoDepartamento(1))
     uni.eliminar_profesor("23456789D")
     assert len(uni.profesores) == 0
+    assert len(uni.miembros_dep[TipoDepartamento(1)]) == 0
 
 def test_eliminar_investigador():
     uni = Universidad("UPCT", "Cartagena", 30390)
     uni.insertar_investigador("Alice Johnson", "34567890E", "789 Oak St", "OTRO", TipoDepartamento(2), "Computer Science")
     uni.eliminar_investigador("34567890E")
-    assert len(uni.profesores) < 1
+    assert len(uni.investigadores) == 0
+    assert len(uni.miembros_dep[TipoDepartamento(2)]) == 0
 
 def test_insertar_asignatura():
     uni = Universidad("UPCT", "Cartagena", 30390)
@@ -470,6 +480,8 @@ def test_cambio_departamento():
     uni.insertar_prof_titular("Alice Johnson", "34567890E", "789 Oak St", "OTRO", TipoDepartamento(2), "Computer Science")
     uni.cambio_departamento("34567890E", TipoDepartamento(1))
     assert uni.profesores[0].departamento == TipoDepartamento(1)
+    assert len(uni.miembros_dep[TipoDepartamento(2)]) == 0
+    assert len(uni.miembros_dep[TipoDepartamento(1)]) == 1
     
 def test_departamento_del_miembro():
     uni = Universidad("UPCT", "Cartagena", 30390)
