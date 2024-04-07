@@ -219,15 +219,7 @@ class Universidad:
             estudiante = Estudiante(nombre, dni, direccion, sexo, grado, curso)
             self.estudiantes.append(estudiante)
 
-    '''def insertar_estudiante(self, nombre, dni, direccion, sexo, grado, curso):
-        estudiante = self.__buscar_estudiante(dni)
-        if estudiante == object:
-            raise Exception("El estudiante que tratas de insertar ya está registrado.")
-        else:
-            pass
-        estudiante = Estudiante(nombre, dni, direccion, sexo, grado, curso)
-        self.estudiantes.append(estudiante)'''
-    
+
     def insertar_prof_asociado(self, nombre, dni, direccion, sexo, departamento):
         prof = self.__buscar_profesor(dni)
         if prof != "DNI no coincide":
